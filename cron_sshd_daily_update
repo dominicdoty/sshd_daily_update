@@ -4,4 +4,4 @@
 # Sendmail must be properly configured before you try this
 # Suggest putting the script in /usr/bin/ and this cron script in /etc/cron.daily/
 
-/path/to/sshd_daily_update.sh -m -e youremailhere@gmail.com | sendmail -t
+/usr/bin/sshd_daily_update.sh -m -r -e youremailhere@gmail.com | sendmail -t

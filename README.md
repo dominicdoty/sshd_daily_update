@@ -1,8 +1,7 @@
 # sshd_daily_update
-A simple script that parses the auth &amp; fail2ban logs for emailing to an admin every morning.
+A simple script that parses the auth log, fail2ban log, and runs rkhunter for emailing to an admin every morning.
 
 It provides analysis of the previous day's traffic, with output like this:
-
 ```
 Analyzing logs from May 28 00:00:01 to May 28 23:59:59
 
@@ -27,15 +26,32 @@ The top IP(s) were:
       1 91.122.14.178    :  RU, Russian Federation   
 
 Fail2Ban blocked 2 IP address(es) that attempted to connect too much
+
+System checks summary
+=====================
+
+File properties checks...
+    Files checked: 147
+    Suspect files: 0
+
+Rootkit checks...
+    Rootkits checked : 500
+    Possible rootkits: 0
 ```
 
 ## Setup
+* Simple: Run install.sh (./install.sh) it should verify all dependencies and copy files to appropriate locations (written for Ubuntu Server)
 * The script assumes your auth logs are at /var/log/ and you have auth.log, auth.log.1, fail2ban.log, and fail2ban.log.1
 * You must have geoiplookup installed (updating the database with geoipupdate is probably also smart)
-* You must have fail2ban installed and running (or the fail2ban part won't work)
+* You must have fail2ban installed and running
 * Simple method is to call the script from the cmdline for a report printed to stdout
 * Or use the included cron script (place in /etc/cron.daily/), configure the script, and configure sendmail for sending email
 * There are comments in the cron script explaining what needs to be configured
+
+## Arguments
+* -m : email formatting (include header and HTML stuff)
+* -e : email address to put in header
+* -r : run rkhunter (must be root/sudo) 
 
 ## Thanks
 * SMTP Provided by Mailgun  [mailgun](https://www.mailgun.com/)

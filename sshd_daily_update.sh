@@ -2,14 +2,24 @@
 
 cd /tmp
 
+RKHUNT='false'
+SENDMAILFLAG='false'
+EMAIL="$USER@$HOSTNAME"
+
 ##ARGUMENT HANDLING
-while getopts 'me:' flag; do
+while getopts 'me:r' flag; do
   case "${flag}" in
     m) SENDMAILFLAG='true' ;;
     e) EMAIL="${OPTARG}" ;;
-    *) SENDMAILFLAG='false';;
+    r) RKHUNT='true' ;;
   esac
 done
+
+##START RKHUNTER IN BACKGROUND
+if [ "$RKHUNT" = "true" ]; then
+	rkhunter --check --enable all -q --sk --summary > rkhunt.log &
+	PID=$!
+fi
 
 ##HTML HEADER JUNK
 if [ "$SENDMAILFLAG" = "true" ]; then
@@ -80,7 +90,6 @@ grep "`date --date='1 days ago' +"%F"`" /var/log/fail2ban.log | grep Ban >> fail
 
 ##FAILURE SECTION
 # Grab failed logins and put them in a file
-#grep "Invalid" day.log | awk -F 'user' '{print $2}' > failed_auths.log
 grep "Invalid" day.log > failed_auths.log
 
 # How many failed logins there were
@@ -133,6 +142,13 @@ fail2ban_bans=$(grep "] Ban" fail2ban_day.log | wc -l)
 printf "Fail2Ban blocked %d IP address(es) that attempted to connect too much\n" "$fail2ban_bans"
 
 
+##RKHUNTER SECTION
+# Wait for rkhunter and print report
+if [ "$RKHUNT" = "true" ]; then
+	wait $PID
+	cat rkhunt.log | head -n 11
+fi
+
 ##HTML END STUFF
 if [ "$SENDMAILFLAG" = "true" ]; then
 	echo "</pre>"
@@ -147,3 +163,4 @@ rm -f successful_ips.log
 rm -f failed_auths.log
 rm -f failed_ips.log
 rm -f fail2ban_day.log
+rm -f rkhunt.log
