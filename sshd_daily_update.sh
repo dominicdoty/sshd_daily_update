@@ -17,7 +17,7 @@ done
 
 ##START RKHUNTER IN BACKGROUND
 if [ "$RKHUNT" = "true" ]; then
-	rkhunter --check --enable all -q --sk --summary > rkhunt.log &
+	sudo rkhunter --check --enable all -q --sk --summary > rkhunt.log &
 	PID=$!
 fi
 
@@ -34,11 +34,16 @@ if [ "$SENDMAILFLAG" = "true" ]; then
 	echo "<pre style=\"font: monospace\">"
 fi
 
+##UPDATES STATUS
+echo -n "UPDATES:"
+sudo cat /var/lib/update-notifier/updates-available
+
 # Create a Logfile with the last day
 grep "`date --date='1 days ago' +"%b %e"`" /var/log/auth.log.1 > day.log
 grep "`date --date='1 days ago' +"%b %e"`" /var/log/auth.log >> day.log
 
 # How many hours the logs cover
+echo "LOG ANALYSIS:"
 echo -n "Analyzing logs from "
 head -n 1 day.log | grep -P -o "\S+ \w+ (\d{2}:){2}\d{2}" | tr -d '\n' # Start
 echo -n " to "
@@ -139,12 +144,14 @@ fi
 fail2ban_bans=$(grep "] Ban" fail2ban_day.log | wc -l)
 
 # Print words
-printf "Fail2Ban blocked %d IP address(es) that attempted to connect too much\n" "$fail2ban_bans"
+echo "FAIL2BAN ANALYSIS:"
+printf "Blocked %d IP address(es)\n\n" "$fail2ban_bans"
 
 
 ##RKHUNTER SECTION
 # Wait for rkhunter and print report
 if [ "$RKHUNT" = "true" ]; then
+	echo -n "RKHUNTER RESULTS:"
 	wait $PID
 	cat rkhunt.log | head -n 11
 fi

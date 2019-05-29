@@ -1,8 +1,17 @@
 # sshd_daily_update
-A simple script that parses the auth log, fail2ban log, and runs rkhunter for emailing to an admin every morning.
+A simple script that provides a daily update for the system admin including:
+* checks for available updates
+* auth log analysis (looking at ssh only)
+* fail2ban log analysis (looking for new bans)
+* daily run of rkhunter
 
-It provides analysis of the previous day's traffic, with output like this:
+Example output:
 ```
+UPDATES:
+0 updates can be installed immediately.
+0 of these updates are security updates.
+
+LOG ANALYSIS:
 Analyzing logs from May 28 00:00:01 to May 28 23:59:59
 
 There were 2 successful login(s) from 1 account(s) and 1 IP address(es)
@@ -25,8 +34,10 @@ The top IP(s) were:
       2 104.196.16.112   :  US, United States        
       1 91.122.14.178    :  RU, Russian Federation   
 
-Fail2Ban blocked 2 IP address(es) that attempted to connect too much
+FAIL2BAN ANALYSIS:
+Blocked 2 IP address(es)
 
+RKHUNTER RESULTS:
 System checks summary
 =====================
 
@@ -51,8 +62,8 @@ Rootkit checks...
 
 ## Arguments
 * -m : email formatting (include header and HTML stuff)
-* -e : email address to put in header
-* -r : run rkhunter (must be root/sudo) 
+* -e : "TO:" email address to put in header
+* -r : run rkhunter
 
 ## Thanks
 * SMTP Provided by Mailgun  [mailgun](https://www.mailgun.com/)
