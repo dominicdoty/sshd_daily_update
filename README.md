@@ -44,6 +44,7 @@ Rootkit checks...
 * The script assumes your auth logs are at /var/log/ and you have auth.log, auth.log.1, fail2ban.log, and fail2ban.log.1
 * You must have geoiplookup installed (updating the database with geoipupdate is probably also smart)
 * You must have fail2ban installed and running
+* You must have rkhunter installed and indexed
 * Simple method is to call the script from the cmdline for a report printed to stdout
 * Or use the included cron script (place in /etc/cron.daily/), configure the script, and configure sendmail for sending email
 * There are comments in the cron script explaining what needs to be configured
