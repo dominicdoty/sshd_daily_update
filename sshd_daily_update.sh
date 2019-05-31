@@ -23,7 +23,7 @@ fi
 
 ##HTML HEADER JUNK
 if [ "$SENDMAILFLAG" = "true" ]; then
-	echo "From: $USER@$HOSTNAME"
+	echo "From: logupdates@$HOSTNAME"
 	echo "To: $EMAIL"
 	echo "Subject: Daily Log Analysis"
 	echo "MIME-Version: 1.0"
@@ -79,7 +79,7 @@ if [ "$successful_auths_count" != "0" ]; then
 
 	while read line; do
 		location=$(echo "$line" | cut -d " " -f 2 | xargs geoiplookup | cut -d: -f 2)
-		printf "      %-18s : %-25s %s\n" "$line" "$location"
+		printf "      %-16s:%-21s\n" "$line" "$location"
 	done < successful_ips.log
 
 	echo ""
@@ -93,18 +93,19 @@ fi
 grep "`date --date='1 days ago' +"%F"`" /var/log/fail2ban.log.1 | grep Ban > fail2ban_day.log
 grep "`date --date='1 days ago' +"%F"`" /var/log/fail2ban.log | grep Ban >> fail2ban_day.log
 
+
 ##FAILURE SECTION
 # Grab failed logins and put them in a file
-grep "Invalid" day.log > failed_auths.log
+grep "Disconnected .\+ \[preauth\]" day.log > failed_auths.log
 
 # How many failed logins there were
 failed_auths_count=$(wc -l < failed_auths.log | tr -d '\n')
 
 # How many failed unique usernames there were
-failed_users_count=$(cut -d " " -f 11 failed_auths.log | sort | uniq | wc -l | tr -d '\n')
+failed_users_count=$(grep -oP "user \K\w+" failed_auths.log | sort | uniq | wc -l | tr -d '\n')
 
 # How many failed unique IPs there were
-failed_ips_count=$(cut -d " " -f 10 failed_auths.log | sort | uniq | wc -l | tr -d '\n')
+failed_ips_count=$(grep -oP "user \w+ \K(\w+.\w+.\w+.\w+)" failed_auths.log | sort | uniq | wc -l | tr -d '\n')
 
 # Print words
 printf "There were %d failed login(s) from %d account(s) and %d IP address(es)\n" "$failed_auths_count" "$failed_users_count" "$failed_ips_count"
@@ -115,11 +116,12 @@ if [ "$failed_auths_count" != "0" ]; then
 
 	# What were the top failed usernames
 	echo "The top username(s) were:"
-	cut -d " " -f 8 failed_auths.log | sort | uniq -c | sort -nr | head -n 5
+	grep -oP "user \K\w+" failed_auths.log | sort | uniq -c | sort -nr > failed_usernames.log
+	cat failed_usernames.log | head -n 5
 
 	# What were the top failed IPs
 	echo "The top IP(s) were:"
-	cut -d " " -f 10 failed_auths.log | sort | uniq -c | sort -nr | head -n 5 > failed_ips.log
+	grep -oP "user \w+ \K(\w+.\w+.\w+.\w+)" failed_auths.log | sort | uniq -c | sort -nr | head -n 5 > failed_ips.log
 
 	while read line; do
 	        location=$(echo "$line" | cut -d " " -f 2 | xargs geoiplookup | cut -d: -f 2 | tr -d '\n')
@@ -130,10 +132,21 @@ if [ "$failed_auths_count" != "0" ]; then
 			banned=""
 		fi
 
-		printf "      %-18s : %-25s %s\n" "$line" "$location" "$banned"
+		printf "      %-16s:%-21s%s\n" "$line" "$location" "$banned"
 	done < failed_ips.log
 
 	echo ""
+
+	# Print failed logins to real users
+	while read line; do
+		if grep -oP "^\w+" /etc/passwd | grep -q `echo "$line" | cut -d " " -f 2`; then
+			count=$(echo "$line" | grep -oP "^\w+")
+			user=$(echo "$line" | grep -oP "\w+$")
+			printf "%d attempts on real account %s\n" "$count" "$user"
+		fi
+	done < failed_usernames.log
+	echo ""
+
 else
 	echo ""
 fi
@@ -169,5 +182,6 @@ rm -f successful_auths.log
 rm -f successful_ips.log
 rm -f failed_auths.log
 rm -f failed_ips.log
+rm -f failed_usernames.log
 rm -f fail2ban_day.log
 rm -f rkhunt.log

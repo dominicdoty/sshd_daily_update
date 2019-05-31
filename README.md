@@ -22,6 +22,7 @@ The top IP(s) were:
 
 There were 63 failed login(s) from 1 account(s) and 55 IP address(es)
 The top username(s) were:
+     24 root
       7 admin
       4 www
       4 user
@@ -33,6 +34,9 @@ The top IP(s) were:
       2 167.99.8.158     :  US, United States        
       2 104.196.16.112   :  US, United States        
       1 91.122.14.178    :  RU, Russian Federation   
+
+24 attempts on real account root
+4 attempts on real account www
 
 FAIL2BAN ANALYSIS:
 Blocked 2 IP address(es)
