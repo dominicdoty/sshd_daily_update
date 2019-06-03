@@ -58,9 +58,9 @@ grep "`date --date='1 days ago' +"%b %e"`" /var/log/auth.log >> day.log
 # How many hours the logs cover
 echo "LOG ANALYSIS:"
 echo -n "Analyzing logs from "
-head -n 1 day.log | grep -P -o "\S+ \w+ (\d{2}:){2}\d{2}" | tr -d '\n' # Start
+head -n 1 day.log | grep -P -o "^(\S+\s+\S+\s+\S+)" | tr -d '\n'	# Start
 echo -n " to "
-tail -n 1 day.log | grep -P -o "\S+ \w+ (\d{2}:){2}\d{2}" # End
+tail -n 1 day.log | grep -P -o "^(\S+\s+\S+\s+\S+)" 				# End
 echo ""
 
 ##SUCCESS SECTION
