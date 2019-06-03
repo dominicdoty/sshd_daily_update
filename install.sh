@@ -7,10 +7,6 @@ echo -n "rkhunter "
 command -v rkhunter > /dev/null 2>&1 || { echo >&2 "[BAD] rkhunter not installed, do sudo apt install rkhunter"; exit 1; }
 echo "[OK]"
 
-echo -n "geoiplookup "
-command -v geoiplookup > /dev/null 2>&1 || { echo >&2 "[BAD] geoiplookup not installed, do sudo apt install geoiplookup"; exit 1; }
-echo "[OK]"
-
 echo -n "fail2ban "
 command -v fail2ban-server > /dev/null 2>&1 || { echo >&2 "[BAD] fail2ban not installed, do sudo apt install fail2ban"; exit 1; }
 echo "[OK]"
@@ -36,6 +32,16 @@ echo "[OK]"
 echo -n "Checking for /var/log/fail2ban.log.1 "
 test -f /var/log/fail2ban.log.1 || { echo >&2 "[BAD] log does not exist"; exit 1; }
 echo "[OK]"
+
+
+## Install IPstack Script
+if ipstack.sh -a ; then
+	echo "ipstack install successful"
+else
+	echo "ipstack install failed"
+	exit 1
+fi
+
 
 ## Copy to /usr/bin
 echo -n "Copying sshd_daily_update.sh to /usr/bin/ "

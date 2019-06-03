@@ -16,30 +16,30 @@ Analyzing logs from May 28 00:00:01 to May 28 23:59:59
 
 There were 2 successful login(s) from 1 account(s) and 1 IP address(es)
 The top username(s) were:
-      2 realusername
+   2 realusername
 The top IP(s) were:
-      2 xxx.xxx.xxx.xxx  :  US, United States        
+   2 xxx.xxx.xxx.xxx  :  Los Angeles California, US        
 
 There were 63 failed login(s) from 1 account(s) and 55 IP address(es)
 The top username(s) were:
-     24 root
-      7 admin
-      4 www
-      4 user
-      3 ftpuser
-      2 zabbix
+   24 root
+   7 admin
+   4 www
+   4 user
+   3 ftpuser
+   2 zabbix
 The top IP(s) were:
-      6 185.254.122.114  :  IP Address not found     BANNED
-      2 41.231.56.98     :  TN, Tunisia              BANNED
-      2 167.99.8.158     :  US, United States        
-      2 104.196.16.112   :  US, United States        
-      1 91.122.14.178    :  RU, Russian Federation   
+   3 68.183.150.54   : Clifton New Jersey, US : BANNED
+   3 128.199.182.235 : Singapore , SG : 
+   2 58.59.2.26      :  Shandong, CN : BANNED
+   2 51.68.230.54    :  , FR : 
+   2 46.101.127.49   : Frankfurt am Main Hesse, DE : BANNED
 
 24 attempts on real account root
 4 attempts on real account www
 
 FAIL2BAN ANALYSIS:
-Blocked 2 IP address(es)
+Blocked 3 IP address(es)
 
 RKHUNTER RESULTS:
 System checks summary
@@ -57,9 +57,9 @@ Rootkit checks...
 ## Setup
 * Simple: Run install.sh (./install.sh) it should verify all dependencies and copy files to appropriate locations (written for Ubuntu Server)
 * The script assumes your auth logs are at /var/log/ and you have auth.log, auth.log.1, fail2ban.log, and fail2ban.log.1
-* You must have geoiplookup installed (updating the database with geoipupdate is probably also smart)
 * You must have fail2ban installed and running
 * You must have rkhunter installed and indexed
+* You must have an API key for ipstack.com
 * Simple method is to call the script from the cmdline for a report printed to stdout
 * Or use the included cron script (place in /etc/cron.daily/), configure the script, and configure sendmail for sending email
 * There are comments in the cron script explaining what needs to be configured
@@ -71,5 +71,4 @@ Rootkit checks...
 
 ## Thanks
 * SMTP Provided by Mailgun  [mailgun](https://www.mailgun.com/)
-* IP Lookup with GeoLite2 from MaxMind
-> This product includes GeoLite2 data created by MaxMind, available from [maxmind.com](https://www.maxmind.com)
+* IP Lookup with [ipstack.com](https://www.ipstack.com/) (FREE! and more detailed results than GeoLite2)

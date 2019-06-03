@@ -7,13 +7,26 @@ SENDMAILFLAG='false'
 EMAIL="$USER@$HOSTNAME"
 
 ##ARGUMENT HANDLING
-while getopts 'me:r' flag; do
+while getopts 'hme:r' flag; do
   case "${flag}" in
+	h) HELP='true' ;;
     m) SENDMAILFLAG='true' ;;
     e) EMAIL="${OPTARG}" ;;
     r) RKHUNT='true' ;;
   esac
 done
+
+
+##HELP
+if [ "$HELP" = "true" ]; then
+	echo "SSHD DAILY UPDATE - basic daily log report and admin"
+	echo "   run with no args for a report to stdout, add -r for rkhunter, add email options to pipe to sendmail"
+	echo "   -m : email formatting (include header/HTML junk)"
+	echo "   -e : TO email address for putting in email header (with -m option)"
+	echo "   -r : run rkhunter"
+	exit 0
+fi
+
 
 ##START RKHUNTER IN BACKGROUND
 if [ "$RKHUNT" = "true" ]; then
@@ -71,15 +84,19 @@ if [ "$successful_auths_count" != "0" ]; then
 
 	# What were the top successful usernames
 	echo "The top username(s) were:"
-	cut -d " " -f 9 successful_auths.log | sort | uniq -c | sort -nr | head -n 5
+	grep -oP "for \K(\S+)" successful_auths.log | sort | uniq -c | sort -nr | head -n 5 | sed -E 's/^( +)/   /g'
 
 	# What were the top successful IPs
 	echo "The top IP(s) were:"
-	cut -d " " -f 11 successful_auths.log | sort | uniq -c | sort -nr | head -n 5 > successful_ips.log
+	grep -oP "from \K(\S+)" successful_auths.log | sort | uniq -c | sort -nr | head -n 5 > successful_ips.log
 
 	while read line; do
-		location=$(echo "$line" | cut -d " " -f 2 | xargs geoiplookup | cut -d: -f 2)
-		printf "      %-16s:%-21s\n" "$line" "$location"
+		line_ip=$(echo "$line" | cut -d " " -f 2)
+		ipstack_resp=$(ipstack.sh -i "$line_ip")
+		city=$(grep -oP "city\":\"\K([^\"]+)" <<< "$ipstack_resp")
+		region=$(grep -oP "region_name\":\"\K([^\"]+)" <<< "$ipstack_resp")
+		country=$(grep -oP "country_code\":\"\K([^\"]+)" <<< "$ipstack_resp")
+		printf "   %-18s: %s %s, %s\n" "$line" "$city" "$region" "$country"
 	done < successful_ips.log
 
 	echo ""
@@ -116,7 +133,7 @@ if [ "$failed_auths_count" != "0" ]; then
 
 	# What were the top failed usernames
 	echo "The top username(s) were:"
-	grep -oP "user \K\w+" failed_auths.log | sort | uniq -c | sort -nr > failed_usernames.log
+	grep -oP "user \K\w+" failed_auths.log | sort | uniq -c | sort -nr | sed -E 's/^( +)/   /g' > failed_usernames.log
 	cat failed_usernames.log | head -n 5
 
 	# What were the top failed IPs
@@ -124,7 +141,11 @@ if [ "$failed_auths_count" != "0" ]; then
 	grep -oP "user \w+ \K(\w+.\w+.\w+.\w+)" failed_auths.log | sort | uniq -c | sort -nr | head -n 5 > failed_ips.log
 
 	while read line; do
-	        location=$(echo "$line" | cut -d " " -f 2 | xargs geoiplookup | cut -d: -f 2 | tr -d '\n')
+	    line_ip=$(echo "$line" | cut -d " " -f 2)
+		ipstack_resp=$(ipstack.sh -i "$line_ip")
+		city=$(grep -oP "city\":\"\K([^\"]+)" <<< "$ipstack_resp")
+		region=$(grep -oP "region_name\":\"\K([^\"]+)" <<< "$ipstack_resp")
+		country=$(grep -oP "country_code\":\"\K([^\"]+)" <<< "$ipstack_resp")
 
 		if grep -q `echo "$line" | cut -d " " -f 2` fail2ban_day.log;then
 			banned="BANNED"
@@ -132,14 +153,14 @@ if [ "$failed_auths_count" != "0" ]; then
 			banned=""
 		fi
 
-		printf "      %-16s:%-21s%s\n" "$line" "$location" "$banned"
+		printf "   %-18s: %s %s, %s : %s\n" "$line" "$city" "$region" "$country" "$banned"
 	done < failed_ips.log
 
 	echo ""
 
 	# Print failed logins to real users
 	while read line; do
-		if grep -oP "^\w+" /etc/passwd | grep -q `echo "$line" | cut -d " " -f 2`; then
+		if grep -oP "^\w+" /etc/passwd | grep -q "^"`echo "$line" | cut -d " " -f 2`"$"; then
 			count=$(echo "$line" | grep -oP "^\w+")
 			user=$(echo "$line" | grep -oP "\w+$")
 			printf "%d attempts on real account %s\n" "$count" "$user"
