@@ -71,10 +71,10 @@ grep -a "Accepted" day.log > successful_auths.log
 successful_auths_count=$(wc -l < successful_auths.log | tr -d '\n')
 
 # How many successful unique usernames there were
-successful_users_count=$(cut -d " " -f 9 successful_auths.log | sort | uniq | wc -l | tr -d '\n')
+successful_users_count=$(grep -oP "for \K\S+" successful_auths.log | sort | uniq | wc -l | tr -d '\n')
 
 # How many successful unique IPs there were
-successful_ips_count=$(cut -d " " -f 11 successful_auths.log | sort | uniq | wc -l | tr -d '\n')
+successful_ips_count=$(grep -oP "from \K[0-9\.]+" successful_auths.log | sort | uniq | wc -l | tr -d '\n')
 
 # Print words
 printf "There were %d successful login(s) from %d account(s) and %d IP address(es)\n" "$successful_auths_count" "$successful_users_count" "$successful_ips_count"
@@ -119,10 +119,10 @@ grep -a "Disconnected .\+ \[preauth\]" day.log > failed_auths.log
 failed_auths_count=$(wc -l < failed_auths.log | tr -d '\n')
 
 # How many failed unique usernames there were
-failed_users_count=$(grep -a -oP "user \K\w+" failed_auths.log | sort | uniq | wc -l | tr -d '\n')
+failed_users_count=$(grep -a -oP "user \K\S+" failed_auths.log | sort | uniq | wc -l | tr -d '\n')
 
 # How many failed unique IPs there were
-failed_ips_count=$(grep -a -oP "user \w+ \K(\w+.\w+.\w+.\w+)" failed_auths.log | sort | uniq | wc -l | tr -d '\n')
+failed_ips_count=$(grep -a -oP "user \S+ \K\S+" failed_auths.log | sort | uniq | wc -l | tr -d '\n')
 
 # Print words
 printf "There were %d failed login(s) from %d account(s) and %d IP address(es)\n" "$failed_auths_count" "$failed_users_count" "$failed_ips_count"
@@ -133,21 +133,21 @@ if [ "$failed_auths_count" != "0" ]; then
 
 	# What were the top failed usernames
 	echo "The top username(s) were:"
-	grep -a -oP "user \K\w+" failed_auths.log | sort | uniq -c | sort -nr | sed -E 's/^( +)/   /g' > failed_usernames.log
+	grep -a -oP "user \K\S+" failed_auths.log | sort | uniq -c | sort -nr | sed -E 's/^( +)/   /g' > failed_usernames.log
 	cat failed_usernames.log | head -n 5
 
 	# What were the top failed IPs
 	echo "The top IP(s) were:"
-	grep -a -oP "user \w+ \K(\w+.\w+.\w+.\w+)" failed_auths.log | sort | uniq -c | sort -nr | head -n 5 > failed_ips.log
+	grep -a -oP "user \S+ \K\S+" failed_auths.log | sort | uniq -c | sort -nr | head -n 5 > failed_ips.log
 
 	while read line; do
-	    line_ip=$(echo "$line" | cut -d " " -f 2)
+	    line_ip=$(echo "$line" | grep -oP "\S+ \K\S+")
 		ipstack_resp=$(ipstack.sh -i "$line_ip")
 		city=$(grep -a -oP "city\":\"\K([^\"]+)" <<< "$ipstack_resp")
 		region=$(grep -a -oP "region_name\":\"\K([^\"]+)" <<< "$ipstack_resp")
 		country=$(grep -a -oP "country_code\":\"\K([^\"]+)" <<< "$ipstack_resp")
 
-		if grep -a -q `echo "$line" | cut -d " " -f 2` fail2ban_day.log;then
+		if grep -a -q "$line_ip" fail2ban_day.log; then
 			banned="BANNED"
 		else
 			banned=""
