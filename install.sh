@@ -35,7 +35,7 @@ echo "[OK]"
 
 
 ## Install IPstack Script
-if ipstack.sh -a ; then
+if ./ipstack.sh -a ; then
 	echo "ipstack install successful"
 else
 	echo "ipstack install failed"
