@@ -92,7 +92,7 @@ if [ "$successful_auths_count" != "0" ]; then
 
 	while read line; do
 		line_ip=$(echo "$line" | cut -d " " -f 2)
-		ipstack_resp=$(ipstack.sh -i "$line_ip")
+		ipstack_resp=$(ipstack -i "$line_ip")
 		city=$(grep -a -oP "city\":\"\K([^\"]+)" <<< "$ipstack_resp")
 		region=$(grep -a -oP "region_name\":\"\K([^\"]+)" <<< "$ipstack_resp")
 		country=$(grep -a -oP "country_code\":\"\K([^\"]+)" <<< "$ipstack_resp")
@@ -142,7 +142,7 @@ if [ "$failed_auths_count" != "0" ]; then
 
 	while read line; do
 	    line_ip=$(echo "$line" | grep -oP "\S+ \K\S+")
-		ipstack_resp=$(ipstack.sh -i "$line_ip")
+		ipstack_resp=$(ipstack -i "$line_ip")
 		city=$(grep -a -oP "city\":\"\K([^\"]+)" <<< "$ipstack_resp")
 		region=$(grep -a -oP "region_name\":\"\K([^\"]+)" <<< "$ipstack_resp")
 		country=$(grep -a -oP "country_code\":\"\K([^\"]+)" <<< "$ipstack_resp")

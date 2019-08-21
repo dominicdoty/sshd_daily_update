@@ -43,9 +43,9 @@ else
 fi
 
 
-## Copy to /usr/bin
-echo -n "Copying sshd_daily_update.sh to /usr/bin/ "
-sudo cp sshd_daily_update.sh /usr/bin/sshd_daily_update.sh || { echo >&2 "[BAD] copying failed"; exit 1; }
+## Copy to /usr/local/bin
+echo -n "Copying sshd_daily_update.sh to /usr/local/bin/ "
+sudo cp sshd_daily_update.sh /usr/local/bin/sshd_daily_update || { echo >&2 "[BAD] copying failed"; exit 1; }
 echo "[OK]"
 
 ## Do Cron setup
@@ -59,20 +59,20 @@ if [ "$CRONYES" = "" ] || [ "$CRONYES" = "y" ] || [ "$CRONYES" = "Y" ]; then
 		exit 1
 	else
 		sed -e 's/youremailhere@gmail.com/'"$EMAIL"'/g' cron_sshd_daily_update > cron_sshd_daily_update_tmp
-		sudo mv cron_sshd_daily_update_tmp /etc/cron.daily/cron_sshd_daily_update
+		sudo mv cron_sshd_daily_update_tmp /etc/cron.daily/zzz_cron_sshd_daily_update
 		echo "Script setup to run by move to /etc/cron.daily"
 
 		echo -n "Updating permissions for cron invocation script "
-		sudo chown root:root /etc/cron.daily/cron_sshd_daily_update|| { echo >&2 "[BAD] Failed to update owner to root"; exit 1; }
-		sudo chmod 755 /etc/cron.daily/cron_sshd_daily_update|| { echo >&2 "[BAD] Failed to update permissions to 755"; exit 1; }
+		sudo chown root:root /etc/cron.daily/zzz_cron_sshd_daily_update|| { echo >&2 "[BAD] Failed to update owner to root"; exit 1; }
+		sudo chmod 755 /etc/cron.daily/zzz_cron_sshd_daily_update|| { echo >&2 "[BAD] Failed to update permissions to 755"; exit 1; }
 		echo "[OK]"
 	fi
 fi
 
 ## Permissions Update
 echo -n "Updating permissions for script "
-sudo chown root:root /usr/bin/sshd_daily_update.sh || { echo >&2 "[BAD] Failed to update script owner to root"; exit 1; }
-sudo chmod 755 /usr/bin/sshd_daily_update.sh || { echo >&2 "[BAD] Failed to update permissions to 755"; exit 1; }
+sudo chown root:root /usr/local/bin/sshd_daily_update || { echo >&2 "[BAD] Failed to update script owner to root"; exit 1; }
+sudo chmod 755 /usr/local/bin/sshd_daily_update || { echo >&2 "[BAD] Failed to update permissions to 755"; exit 1; }
 echo "[OK]"
 
 ## All Done

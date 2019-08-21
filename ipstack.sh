@@ -15,7 +15,7 @@ done
 if [ "$HELP" = 'true' ]; then
 	echo "IPSTACK BASH WRAPPER - Quick bash wrapper to perform a curl of the ipstack.com API"
 	echo "   -i : IP address arg, 'check' gives results for self"
-	echo "   -a : Install the script (set API key and copy to /usr/bin)"
+	echo "   -a : Install the script (set API key and copy to /usr/local/bin)"
 	exit 0
 fi
 
@@ -50,13 +50,13 @@ if [ "$INSTALL" = true ]; then
 
 
     ## Install ipstack
-    echo -n "Copying ipstack.sh to /usr/bin "
-    sudo mv ipstack.tmp.sh /usr/bin/ipstack.sh || { echo >&2 "[BAD] copying failed"; exit 1; }
+    echo -n "Copying ipstack.sh to /usr/local/bin "
+    sudo mv ipstack.tmp.sh /usr/local/bin/ipstack || { echo >&2 "[BAD] copying failed"; exit 1; }
     echo "[OK]"
 
     echo -n "Setting permisions on ipstack.sh "
-    sudo chown root:root /usr/bin/ipstack.sh || { echo >&2 "[BAD] Failed to update script owner to root"; exit 1; }
-    sudo chmod 755 /usr/bin/ipstack.sh || { echo >&2 "[BAD] Failed to update permissions to 755"; exit 1; }
+    sudo chown root:root /usr/local/bin/ipstack || { echo >&2 "[BAD] Failed to update script owner to root"; exit 1; }
+    sudo chmod 755 /usr/local/bin/ipstack || { echo >&2 "[BAD] Failed to update permissions to 755"; exit 1; }
     echo "[OK]"
 
 	exit 0
