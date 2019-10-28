@@ -52,8 +52,7 @@ echo -n "UPDATES:"
 sudo cat /var/lib/update-notifier/updates-available
 
 # Create a Logfile with the last day
-grep -a "`date --date='1 days ago' +"%b %e"`" /var/log/auth.log.1 > day.log
-grep -a "`date --date='1 days ago' +"%b %e"`" /var/log/auth.log >> day.log
+grep -a "`date --date='1 days ago' +"%b %e"`" /var/log/auth.log* > day.log
 
 # How many hours the logs cover
 echo "LOG ANALYSIS:"
@@ -107,13 +106,11 @@ fi
 
 ##FAIL2BAN PREP
 # Create a Logfile with the last day
-grep -a "`date --date='1 days ago' +"%F"`" /var/log/fail2ban.log.1 | grep -a Ban > fail2ban_day.log
-grep -a "`date --date='1 days ago' +"%F"`" /var/log/fail2ban.log | grep -a Ban >> fail2ban_day.log
-
+grep -a "`date --date='1 days ago' +"%F"`" /var/log/fail2ban.log* > fail2ban_day.log
 
 ##FAILURE SECTION
 # Grab failed logins and put them in a file
-grep -a "Disconnected .\+ \[preauth\]" day.log > failed_auths.log
+grep -a "Disconnected" day.log | grep -a "preauth" > failed_auths.log
 
 # How many failed logins there were
 failed_auths_count=$(wc -l < failed_auths.log | tr -d '\n')
@@ -122,7 +119,7 @@ failed_auths_count=$(wc -l < failed_auths.log | tr -d '\n')
 failed_users_count=$(grep -a -oP "user \K\S+" failed_auths.log | sort | uniq | wc -l | tr -d '\n')
 
 # How many failed unique IPs there were
-failed_ips_count=$(grep -a -oP "user \S+ \K\S+" failed_auths.log | sort | uniq | wc -l | tr -d '\n')
+failed_ips_count=$(grep -a -oP "\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b" failed_auths.log | sort | uniq | wc -l | tr -d '\n')
 
 # Print words
 printf "There were %d failed login(s) from %d account(s) and %d IP address(es)\n" "$failed_auths_count" "$failed_users_count" "$failed_ips_count"
@@ -138,10 +135,10 @@ if [ "$failed_auths_count" != "0" ]; then
 
 	# What were the top failed IPs
 	echo "The top IP(s) were:"
-	grep -a -oP "user \S+ \K\S+" failed_auths.log | sort | uniq -c | sort -nr | head -n 5 > failed_ips.log
+	grep -a -oP "\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b" failed_auths.log | sort | uniq -c | sort -nr | head -n 5 > failed_ips.log
 
 	while read line; do
-	    line_ip=$(echo "$line" | grep -oP "\S+ \K\S+")
+	    line_ip=$(echo "$line" | grep -a -oP "\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b")
 		ipstack_resp=$(ipstack -i "$line_ip")
 		city=$(grep -a -oP "city\":\"\K([^\"]+)" <<< "$ipstack_resp")
 		region=$(grep -a -oP "region_name\":\"\K([^\"]+)" <<< "$ipstack_resp")
