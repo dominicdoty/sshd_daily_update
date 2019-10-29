@@ -52,7 +52,9 @@ echo -n "UPDATES:"
 sudo cat /var/lib/update-notifier/updates-available
 
 # Create a Logfile with the last day
-grep -a "`date --date='1 days ago' +"%b %e"`" /var/log/auth.log* > day.log
+yesterday=$(date --date='1 days ago' +"%F")
+today=$(date +"%F")
+journalctl --since=$yesterday --until=$today --identifier=sshd | tail -n +2 > day.log
 
 # How many hours the logs cover
 echo "LOG ANALYSIS:"
@@ -93,7 +95,7 @@ if [ "$successful_auths_count" != "0" ]; then
 		line_ip=$(echo "$line" | cut -d " " -f 2)
 		ipstack_resp=$(ipstack -i "$line_ip")
 		city=$(grep -a -oP "city\":\"\K([^\"]+)" <<< "$ipstack_resp")
-		region=$(grep -a -oP "region_name\":\"\K([^\"]+)" <<< "$ipstack_resp")
+		region=$(grep -a -oP "region_code\":\"\K([^\"]+)" <<< "$ipstack_resp")
 		country=$(grep -a -oP "country_code\":\"\K([^\"]+)" <<< "$ipstack_resp")
 		printf "   %-18s: %s %s, %s\n" "$line" "$city" "$region" "$country"
 	done < successful_ips.log
@@ -141,7 +143,7 @@ if [ "$failed_auths_count" != "0" ]; then
 	    line_ip=$(echo "$line" | grep -a -oP "\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b")
 		ipstack_resp=$(ipstack -i "$line_ip")
 		city=$(grep -a -oP "city\":\"\K([^\"]+)" <<< "$ipstack_resp")
-		region=$(grep -a -oP "region_name\":\"\K([^\"]+)" <<< "$ipstack_resp")
+		region=$(grep -a -oP "region_code\":\"\K([^\"]+)" <<< "$ipstack_resp")
 		country=$(grep -a -oP "country_code\":\"\K([^\"]+)" <<< "$ipstack_resp")
 
 		if grep -a -q "$line_ip" fail2ban_day.log; then
